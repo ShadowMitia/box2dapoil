@@ -83,6 +83,8 @@ void ofApp::update(){
 
 	//ofRemove(boxes, ofxBox2dBaseShape::shouldRemoveOffScreen);
 	//ofRemove(letters, ofxBox2dBaseShape::shouldRemoveOffScreen);
+
+	images[0].get()->shapeSmash(box2d);
 }
 
 //--------------------------------------------------------------
@@ -103,6 +105,11 @@ void ofApp::draw(){
 	for (size_t i = 0; i < images.size(); i++)
 	{
 		images[i].get()->draw();
+	}
+
+	for (size_t i = 0; i < images[0].get()->polyShapes.size(); i++)
+	{
+		images[0].get()->polyShapes[i]->draw();
 	}
 }
 

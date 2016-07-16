@@ -3,22 +3,66 @@
 #include "ofMain.h"
 #include "ofxBox2d.h"
 
-class CustomImage : public ofxBox2dRect {
-	ofImage* img;
 
+
+
+class CustomImage : public ofxBox2dRect /*, public ofxBox2dContactListener */{
+	ofImage* img;
+	bool shattered;
+public:
+	vector <shared_ptr<ofxBox2dPolygon> > polyShapes;
 public:
 
 	CustomImage(ofImage* i) {
 		img = i;
+		shattered = false;
 	}
+	/*
+	void BeginContact(b2Contact* contact) override {
+		if (contact->IsTouching()) {
+			cout << "test" << endl;
+		}
+	}
+	*/
 
 	void draw() {
-		glPushMatrix();
-		ofTranslate(getPosition().x, getPosition().y);
-		ofRotate(getRotation());
-		img->setAnchorPercent(0.5, 0.5);
-		img->draw(0, 0);
-		glPopMatrix();
+		if (!shattered) {
+			glPushMatrix();
+			ofTranslate(getPosition().x, getPosition().y);
+			ofRotate(getRotation());
+			img->setAnchorPercent(0.5, 0.5);
+			img->draw(0, 0);
+			glPopMatrix();
+		} else {
+			glPushMatrix();
+			ofTranslate(getPosition().x, getPosition().y);
+			ofRotate(getRotation());
+
+			glPopMatrix();
+		}
+
+	}
+
+	 void shapeSmash(ofxBox2d& box2d) {
+
+		vector <shared_ptr<ofxBox2dPolygon> > polyShapes;
+
+		ofPolyline poly;
+		poly.addVertex(getPosition().x, getPosition().y);
+		poly.addVertex(getPosition().x + getWidth(), getPosition().y);
+		poly.addVertex(getPosition().x, getPosition().y + getHeight());
+		poly.addVertex(getPosition().x + getWidth(), getPosition().y + getHeight());
+		vector<TriangleShape> tris = triangulatePolygon(poly, true);
+
+		for (int i = 0; i<tris.size(); i++) {
+
+			shared_ptr<ofxBox2dPolygon> triangle = shared_ptr<ofxBox2dPolygon>(new ofxBox2dPolygon);
+			triangle->addTriangle(tris[i].a, tris[i].b, tris[i].c);
+			triangle->setPhysics(1.0, 0.3, 0.3);
+			triangle->create(box2d.getWorld());
+
+			polyShapes.push_back(triangle);
+		}
 	}
 };
 
